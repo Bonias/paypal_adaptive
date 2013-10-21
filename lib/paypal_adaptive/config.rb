@@ -21,7 +21,7 @@ module PaypalAdaptive
     def initialize(env=nil, config_override={})
       config = YAML.load(ERB.new(File.new(config_filepath).read).result)[env]
       raise "Could not load settings from config file" unless config
-      config.merge!(config_override) unless config_override.nil?
+      config.merge!(config_override.stringify_keys) unless config_override.nil?
 
       validate_config(config)
 
@@ -78,11 +78,15 @@ module PaypalAdaptive
     end
   end
 
-  def self.config(env = nil)
+  def self.config(env = nil, config_options=nil)
     env ||= default_env_for_config
     raise "Please provide an environment" unless env
     @configs ||= Hash.new
-    @configs[env] ||= Config.new(env)
+    if config_options
+      Config.new(env, config_options)
+    else
+      @configs[env] ||= Config.new(env)
+    end
   end
 
   private
